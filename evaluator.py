@@ -6,9 +6,9 @@ def sent_evaluator(_string):
     #print(j)
     FOG=textstat.gunning_fog(j)
     ARI=textstat.automated_readability_index(j)
-    CLI=textstat.coleman_liau_index(j)
-    mean=(FOG+ARI+CLI)/3
-    print(FOG,ARI,CLI,mean)
+    FKGL=textstat.fleschkincaidgrade(j)
+    mean=(FOG+ARI+FKGL)/3
+    print(FOG,ARI,FKGL,mean)
     return mean
 
 if __name__ == '__main__':
