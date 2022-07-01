@@ -13,6 +13,7 @@ def ReadInFile (filename):
 
 
 def SARIngram(sgrams, cgrams, rgramslist, numref):
+    #count the number of each word
     rgramsall = [rgram for rgrams in rgramslist for rgram in rgrams]
     rgramcounter = Counter(rgramsall)
 	
@@ -28,14 +29,21 @@ def SARIngram(sgrams, cgrams, rgramslist, numref):
 	
     
     # KEEP
+    #Take the intersection of two sets
+    #The intersection of the original sentence and the current sentence
     keepgramcounter_rep = sgramcounter_rep & cgramcounter_rep
+    #words reserved by reference
     keepgramcountergood_rep = keepgramcounter_rep & rgramcounter
+    #word reserved in the original sentence
     keepgramcounterall_rep = sgramcounter_rep & rgramcounter
 
     keeptmpscore1 = 0
     keeptmpscore2 = 0
+
     for keepgram in keepgramcountergood_rep:
+        #The proportion of words retained according to citations in the intersection of the original sentence and the current sentence
         keeptmpscore1 += keepgramcountergood_rep[keepgram] / keepgramcounter_rep[keepgram]
+        #Proportion of words retained according to citations in the original sentence
         keeptmpscore2 += keepgramcountergood_rep[keepgram] / keepgramcounterall_rep[keepgram]
         #print "KEEP", keepgram, keepscore, cgramcounter[keepgram], sgramcounter[keepgram], rgramcounter[keepgram]
     keepscore_precision = 0
@@ -50,13 +58,17 @@ def SARIngram(sgrams, cgrams, rgramslist, numref):
 
 
     # DELETION
+    #The difference between the original sentence and the current sentence
     delgramcounter_rep = sgramcounter_rep - cgramcounter_rep
     delgramcountergood_rep = delgramcounter_rep - rgramcounter
+    #The difference between the original sentence and the reference sentence
     delgramcounterall_rep = sgramcounter_rep - rgramcounter
     deltmpscore1 = 0
     deltmpscore2 = 0
+
     for delgram in delgramcountergood_rep:
-        deltmpscore1 += delgramcountergood_rep[delgram] / delgramcounter_rep[delgram]
+        #Words deleted according to citation, the proportion of deleted words in the original sentence
+        deltmpscore1 += delgramcountergood_rep[delgram] / delgramcounter_rep[delgram]  
         deltmpscore2 += delgramcountergood_rep[delgram] / delgramcounterall_rep[delgram]
     delscore_precision = 0
     if len(delgramcounter_rep) > 0:
@@ -70,8 +82,12 @@ def SARIngram(sgrams, cgrams, rgramslist, numref):
 
 
     # ADDITION
+    #Find words that were added 
+    #more words in the current sentence than in the original sentence
     addgramcounter = set(cgramcounter) - set(sgramcounter)
+    #New words added to the current sentence based on the reference sentence
     addgramcountergood = set(addgramcounter) & set(rgramcounter)
+    #New words based on reference sentences
     addgramcounterall = set(rgramcounter) - set(sgramcounter)
 
     addtmpscore = 0
@@ -94,6 +110,7 @@ def SARIngram(sgrams, cgrams, rgramslist, numref):
 def SARIsent (ssent, csent, rsents) :
     numref = len(rsents)	
 
+    #split sentence
     s1grams = ssent.lower().split(" ")
     c1grams = csent.lower().split(" ")
     s2grams = []
@@ -113,6 +130,7 @@ def SARIsent (ssent, csent, rsents) :
         r3grams = []
         r4grams = []
         r1gramslist.append(r1grams)
+        #regroup the words of ref sentence in size of 2,3,4 
         for i in range(0, len(r1grams)-1) :
             if i < len(r1grams) - 1:
                 r2gram = r1grams[i] + " " + r1grams[i+1]
@@ -127,6 +145,7 @@ def SARIsent (ssent, csent, rsents) :
         r3gramslist.append(r3grams)
         r4gramslist.append(r4grams)
        
+    #regroup the words of source sentence in size of 2,3,4
     for i in range(0, len(s1grams)-1) :
         if i < len(s1grams) - 1:
             s2gram = s1grams[i] + " " + s1grams[i+1]
@@ -138,6 +157,7 @@ def SARIsent (ssent, csent, rsents) :
             s4gram = s1grams[i] + " " + s1grams[i+1] + " " + s1grams[i+2] + " " + s1grams[i+3]
             s4grams.append(s4gram)
             
+    #regroup the words of ref sentence in size of 2,3,4
     for i in range(0, len(c1grams)-1) :
         if i < len(c1grams) - 1:
             c2gram = c1grams[i] + " " + c1grams[i+1]
@@ -149,11 +169,13 @@ def SARIsent (ssent, csent, rsents) :
             c4gram = c1grams[i] + " " + c1grams[i+1] + " " + c1grams[i+2] + " " + c1grams[i+3]
             c4grams.append(c4gram)
 
-
+    #Calculate the SARI for four different cases
     (keep1score, del1score, add1score) = SARIngram(s1grams, c1grams, r1gramslist, numref)
     (keep2score, del2score, add2score) = SARIngram(s2grams, c2grams, r2gramslist, numref)
     (keep3score, del3score, add3score) = SARIngram(s3grams, c3grams, r3gramslist, numref)
     (keep4score, del4score, add4score) = SARIngram(s4grams, c4grams, r4gramslist, numref)
+
+
     avgkeepscore = sum([keep1score,keep2score,keep3score,keep4score])/4
     avgdelscore = sum([del1score,del2score,del3score,del4score])/4
     avgaddscore = sum([add1score,add2score,add3score,add4score])/4
@@ -167,12 +189,10 @@ def main():
     ssent = "About 95 species are currently accepted ."
     csent1 = "About 95 you now get in ."
     csent2 = "About 95 species are now agreed ."
-    #csent3 = "About 95 species are currently agreed ."
     rsents = ["About 95 species are currently known .", "About 95 species are now accepted ."]
 
     print(SARIsent(ssent, csent1, rsents))
     print(SARIsent(ssent, csent2, rsents))
-    #print(SARIsent(ssent, csent3, rsents))
 
 
 if __name__ == '__main__':

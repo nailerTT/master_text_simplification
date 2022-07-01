@@ -22,7 +22,7 @@ class Simplifier1:
         self.ngram_freq_dict = dict(zip(ngrams.bigram, ngrams.freq))
         self.freq_dict = generate_freq_dict()
 
-        self.steps = open('steps.txt', 'w')
+        self.steps = open('steps_1.txt', 'w')
 
     def return_bigram_score(self, context, token, replacement):
         """ Return ad averaged frequency of left- and right-context bigram. """
